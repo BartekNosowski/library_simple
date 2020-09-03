@@ -26,6 +26,12 @@ public class Book {
     private String isbn;
 
     @ManyToOne
-    @JoinColumn(name = "cat_id")
+    @JoinColumn(name = "cat_id",updatable = false,insertable = false)
     private Category category;
+
+    //@JsonIgnore
+    @Column (name = "cat_id")
+    private Integer categoryId;
+
+
 }

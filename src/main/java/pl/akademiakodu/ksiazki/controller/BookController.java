@@ -34,22 +34,27 @@ public class BookController {
     }
 
     @PostMapping("books")
-    public Book createBook(@RequestParam String title, @RequestParam String author) {
+    public Book createBook(@RequestParam String title,
+                           @RequestParam String author,
+                           @RequestParam(required = false) Integer categoryId) {
         Book book = new Book();
         book.setTitle(title);
         book.setAuthor(author);
+        book.setCategoryId(categoryId);
         return bookRepository.save(book);
     }
 
     @PutMapping("books/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Integer id,
                            @RequestParam String title,
-                           @RequestParam String author) {
+                           @RequestParam String author,
+                           @RequestParam(required = false) Integer categoryId) {
         Optional<Book> bookOptional = bookRepository.findById(id);
         if (bookOptional.isPresent()){
             Book book = bookOptional.get();
             book.setTitle(title);
             book.setAuthor(author);
+            book.setCategoryId(categoryId);
             return new ResponseEntity<>(bookRepository.save(book),HttpStatus.OK);
         }else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
