@@ -4,25 +4,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-
+import javax.persistence.*;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Book {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.AUTO)
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Integer id;
-
 
     private String title;
 
@@ -32,7 +25,7 @@ public class Book {
     @JsonIgnore
     private String isbn;
 
-
-
-
+    @ManyToOne
+    @JoinColumn(name = "cat_id")
+    private Category category;
 }
