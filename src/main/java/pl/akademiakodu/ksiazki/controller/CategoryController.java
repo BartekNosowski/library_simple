@@ -1,6 +1,7 @@
 package pl.akademiakodu.ksiazki.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.annotations.ApiOperation;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,79 +9,99 @@ import pl.akademiakodu.ksiazki.model.Book;
 import pl.akademiakodu.ksiazki.model.Category;
 import pl.akademiakodu.ksiazki.repository.CategoryRepository;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import java.util.List;
-import java.util.Optional;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/categories")
 public class CategoryController {
 
     private CategoryRepository categoryRepository;
 
-    @Autowired
     public CategoryController(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
-    @GetMapping("categories")
+    @GetMapping
     public Iterable<Category> findAll() {
         return categoryRepository.findAll();
     }
 
 
-    @GetMapping("categories/{id}")
-    public ResponseEntity<Category> showOne(@PathVariable Integer id){
-        Optional<Category> categoryOptional = categoryRepository.findById(id);
-        if (categoryOptional.isPresent()) {
-            Category category = categoryOptional.get();
-//            category.setId(id);
-//            category.setCategoryName(categoryName);
-            return new ResponseEntity<>(category, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-    @GetMapping("categories/{id}/books")
-    public ResponseEntity<List<Book>> showBooksByCategory (@PathVariable Integer id){
-        Optional<Category> categoryOptional = categoryRepository.findById(id);
-
-        if (categoryOptional.isPresent()) {
-            Category category = categoryOptional.get();
-            return new ResponseEntity<>(category.getBooks(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> findById(@PathVariable int id) {
+        if (categoryRepository.existsById(id))
+            return new ResponseEntity<>(categoryRepository.findById(id).get(), HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("categories")
-    public Category createCategory(@RequestParam String categoryName) {
-        Category category = new Category();
-        category.setCategoryName(categoryName);
-        return categoryRepository.save(category);
+
+    @ApiOperation(value = "COUNT number of users")
+    @GetMapping("/count")
+    public long count() {
+        return categoryRepository.count();
     }
-    @PutMapping("categories/{id}")
-    public ResponseEntity<Category> showOne(@PathVariable Integer id,
-                                            @RequestParam String categoryName){
-        Optional<Category> categoryOptional = categoryRepository.findById(id);
-        if (categoryOptional.isPresent()) {
-            Category category = categoryOptional.get();
-            category.setCategoryName(categoryName);
-            return new ResponseEntity<>(category, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+
+
+    @GetMapping("/exists/{id}")
+    public ResponseEntity<Category> ifExists(@PathVariable int id) {
+        if (categoryRepository.existsById(id))
+            return new ResponseEntity<>(categoryRepository.findById(id).get(), HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    @DeleteMapping("categories/{id}")
-    public ResponseEntity<Category> deleteCategory(@PathVariable Integer id) {
-        Optional<Category> category = categoryRepository.findById(id);
-        if (category.isPresent()) {
-            categoryRepository.delete(category.get());
+
+
+    @ApiOperation(value = "POST with JSON")
+    @PostMapping
+    public ResponseEntity<Category> save(@RequestBody Category category) {
+        boolean exists = ((List<Category>) categoryRepository.findAll()).stream()
+                .map(c -> c.getCategoryName())
+                .anyMatch(c -> c.equals(category.getCategoryName()));
+        if (!exists) return new ResponseEntity<>(
+                categoryRepository.save(category),
+                HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    }
+
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Category> deleteCategory(@PathVariable int id) {
+        if (categoryRepository.existsById(id)) {
+            categoryRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.OK);
-        } else {
+        } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+
+    @ApiOperation(value = "UPDATE with JSON")
+    @PutMapping
+    public ResponseEntity<Category> updateCategory(@RequestBody Category category) {
+        if (categoryRepository.existsById(category.getCategoryId())) {
+            Category newCategory = categoryRepository.findById(category.getCategoryId()).get();
+            newCategory.setCategoryId(category.getCategoryId());
+            if (category.getCategoryName() != null)
+                newCategory.setCategoryName(newCategory.getCategoryName());
+
+            return new ResponseEntity<>(categoryRepository.save(newCategory), HttpStatus.OK);
+        } else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    }
+
+
+    @GetMapping("/{id}/books")
+    public ResponseEntity<List<Book>> showBooks(@PathVariable int id) {
+        if (categoryRepository.existsById(id))
+            return new ResponseEntity<>(
+                    categoryRepository.findById(id).get().getBooks(),
+                    HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+
+    @ApiOperation(value = "just CHECK connection and if working properly")
+    @GetMapping("check")
+    String check() {
+        return "Check 1..2..3";
     }
 }

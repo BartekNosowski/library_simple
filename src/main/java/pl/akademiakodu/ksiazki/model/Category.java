@@ -1,30 +1,26 @@
 package pl.akademiakodu.ksiazki.model;
-
-import lombok.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cat_id",insertable = false,updatable = false)
+    @Column(name = "category_id", updatable = false, insertable = false)
     private Integer categoryId;
 
-    @Column(name = "category_name")
     private String categoryName;
 
-    @OneToMany(mappedBy = "category")
-    @JsonIgnore
-    private List<Book> books = new ArrayList<>();
 
+    @OneToMany(mappedBy = "category")
+    private List<Book> books = new ArrayList<>();
 }
